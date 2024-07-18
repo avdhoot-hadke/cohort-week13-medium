@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { postRouter, userRouter } from "./routes";
+import { cors } from 'hono/cors'
 
 // import { createMiddleware } from 'hono/factory'
 
@@ -16,6 +17,9 @@ const app = new Hono<{
 }>();
 
 //middleware
+
+app.use('/*', cors())
+
 app.use(async (c, next) => {
   const prisma = new PrismaClient({ datasourceUrl: c.env.DATABASE_URL, }).$extends(withAccelerate());
   c.set("prisma", prisma);

@@ -1,7 +1,7 @@
 
 import { Hono } from "hono";
 import { verify } from "hono/jwt";
-import { createPost, updatePost } from "@avdhoothadke/medium-common/dist";
+import { createPost, updatePost } from "@avdhoothadke/medium-common";
 
 export const postRouter = new Hono<{
     Bindings: {
@@ -76,7 +76,16 @@ postRouter.get("/bulk", async (c) => {
     const prisma = c.get("prisma");
     console.log("in bulk");
     try {
-        const posts = await prisma.post.findMany({});
+        const posts = await prisma.post.findMany({
+            include: {
+                author: {
+                    select: {
+                        email: true,
+                        name: true,
+                    },
+                },
+            },
+        });
         return c.json({ posts });
     } catch (error) {
         return c.text("Error in fetching the posts.")
@@ -89,7 +98,16 @@ postRouter.get("/:id", async (c) => {
 
     try {
 
-        const post = await prisma.post.findFirst({ where: { id } });
+        const post = await prisma.post.findFirst({
+            where: { id }, include: {
+                author: {
+                    select: {
+                        email: true,
+                        name: true,
+                    },
+                },
+            },
+        });
         return c.json({ post });
     } catch (error) {
         return c.json({ error, message: "Could not get the post." })
